@@ -1,9 +1,16 @@
 package Icydee::Docs::Web::Controller::Root;
-
+#
+# $Id: $
+# $Revision: $
+# $Author: $
+# $Source:  $
+#
+# $Log: $
+#
 use Moose;
+use namespace::autoclean;
 
 BEGIN {extends 'Catalyst::Controller'};
-use namespace::autoclean;
 
 #
 # Sets the actions in this controller to be registered with no prefix

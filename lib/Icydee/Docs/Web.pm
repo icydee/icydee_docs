@@ -1,7 +1,14 @@
 package Icydee::Docs::Web;
-
-use strict;
-use warnings;
+#
+# $Id: $
+# $Revision: $
+# $Author: $
+# $Source:  $
+#
+# $Log: $
+#
+use Moose;
+use namespace::autoclean;
 
 use Catalyst::Runtime 5.80;
 

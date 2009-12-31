@@ -1,7 +1,16 @@
 package Icydee::Docs::Web::Model::DB;
+#
+# $Id: $
+# $Revision: $
+# $Author: $
+# $Source:  $
+#
+# $Log: $
+#
+use Moose;
+use namespace::autoclean;
 
-use strict;
-use base 'Catalyst::Model::DBIC::Schema';
+BEGIN {extends 'Catalyst::Model::DBIC::Schema'};
 
 __PACKAGE__->config(
     schema_class    => 'Icydee::Docs::DB',

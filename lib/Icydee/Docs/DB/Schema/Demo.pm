@@ -1,11 +1,18 @@
 package Icydee::Docs::DB::Schema::Demo;
-
-use strict;
-use warnings;
-
-use base 'DBIx::Class';
+#
+# $Id: $
+# $Revision: $
+# $Author: $
+# $Source:  $
+#
+# $Log: $
+#
+use Moose;
+use namespace::autoclean;
 
 use Carp;
+
+extends 'DBIx::Class';
 
 __PACKAGE__->load_components('PK::Auto','Core');
 __PACKAGE__->table("demo");

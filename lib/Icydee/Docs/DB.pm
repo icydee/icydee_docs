@@ -7,10 +7,10 @@ package Icydee::Docs::DB;
 #
 # $Log: $
 #
-use strict;
-use warnings;
+use Moose;
+use namespace::autoclean;
 
-use base 'DBIx::Class::Schema';
+BEGIN {extends 'DBIx::Class::Schema'};
 
 __PACKAGE__->load_namespaces (
     result_namespace            => 'Schema',
