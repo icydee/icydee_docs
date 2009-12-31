@@ -1,0 +1,172 @@
+
+body{
+  font-family:      "Segoe UI", Frutiger, Tahoma, Helvetica, "Helvetica Neue", Arial, sans-serif;
+  color:            #333;
+  margin:           0;
+  padding:          0;
+  font-size:        12px;
+}
+
+/*basic content*/
+h1 { font-size: 18px; }
+h2 { font-size: 16px; }
+h3 { font-size: 15px; }
+h4 { font-size: 14px; }
+h5 { font-size: 13px; }
+h6 { font-size: 12px; }
+li { font-size: 12px; margin-left: 20px; }
+p,dt,dd,option { font-size: 12px; padding: 0; margin: 0; }
+dd { margin-right: 2px; }
+ul,ol{padding:0;}
+em{color:     red;}
+
+#VM-header .VM-logo {
+  background:       transparent url(/img/logo.png) no-repeat scroll 0 0;
+  display:          block;
+  float:            left;
+  height:           80px;
+  overflow:         hidden;
+  text-indent:      -9999px;
+  width:            137px;
+}
+
+#topsection{
+  background:       #2e90BD;
+  height:           92px; /*Height of top section*/
+}
+
+.header{
+  font-size:        40px;
+  color:            #fff;
+  text-indent:      200px;
+}
+
+#contentwrapper{
+  float:            left;
+  width:            100%;
+}
+
+#contentcolumn{
+  margin-left:      200px; /*Set left margin to LeftColumnWidth*/
+}
+
+#leftcolumn{
+/*  float:            left; */
+  width:            200px; /*Width of left column*/
+/*  margin-left:      -100%; */
+  background:       #fff;
+}
+
+#footer{
+  clear:            left;
+  width:            100%;
+  background:       #2e90BD;
+  text-align:       right;
+  padding:          4px 0;
+}
+
+#footer li {
+  padding:          0 12px;
+  display:          inline;
+  border-right:     1px solid #ccc;
+}
+#footer li.last {
+  padding-right:    0;
+  border-right:     none;
+}
+
+#footer a {
+  padding-right:    0;
+  border-right:     none;
+}
+
+.innertube{
+  margin:           10px; /*Margins for inner DIV inside each column (to provide padding)*/
+  margin-top:       10px;
+}
+
+.innercontent{
+  margin:           20px;
+  margin-top:       20px;
+}
+
+form {
+  margin-top:       20px;
+}
+
+textarea {
+  font-family:      "Segoe UI", Frutiger, Tahoma, Helvetica, "Helvetica Neue", Arial, sans-serif;
+  font-size:        12px;
+  width:            400px;
+  height:           80px;
+  margin:           0;
+}
+
+input[type="text"] {
+  font-size:        12px;
+  margin:           0;
+  width:            400px;
+}
+
+input.selbox {
+  width:            40px;
+}
+
+#login {
+  width:            200px;
+  display:          block;
+  margin:           5px auto;
+}
+
+#login input {
+  width:            200px;
+}
+#login input.submit {
+  width:            41px;
+  margin-left:      159px;
+  margin-top:       5px;
+}
+
+.dnd_page_block {
+  width:            220px;
+  height:           80px;
+  background-color: #cccccc;
+  color:            #000;
+  border:           1px solid #ccc
+}
+
+.dnd_big_block {
+  width:            420px;
+  height:           100px;
+  background-color: #cccccc;
+  color:            #000;
+}
+
+fieldset {
+  border:           1px solid #dddddd;
+  margin-bottom:    10px;
+  padding:          10px;
+}
+
+legend
+{
+	display:        inline;
+	font-weight:    bold;
+	color:          #;
+}
+
+.td_title
+{
+    width:          200px;
+}
+
+.strike_matrix
+{
+    width:          150px;
+    text-align:     left;
+}
+
+.hidden
+{
+    display:        none;
+}

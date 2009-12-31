@@ -1,0 +1,31 @@
+[%- use_jquery  =1 -%]
+[%- use_jdmenu  =1 -%]
+[%- use_grid    =0 -%]
+[%- use_tree    =1 -%]
+
+[%- javascript_block = BLOCK %]
+
+jQuery(document).ready(function() {
+  jQuery("#jq_tree").tree({
+    ui: {
+      theme_name: 'apple'
+    }
+  });
+});
+[%- END %]
+
+[%- PROCESS header.html -%]
+	<div class="demo source" id="jq_tree">
+		<ul>
+			<li id="phtml_1" class="open"><a href="#"><ins>&nbsp;</ins>Root node 1</a>
+				<ul>
+					<li id="phtml_2"><a href="#"><ins>&nbsp;</ins>Child node 1</a></li>
+					<li id="phtml_3"><a href="#"><ins>&nbsp;</ins>Child node 2</a></li>
+
+					<li id="phtml_4"><a href="#"><ins>&nbsp;</ins>Some other child node with longer text</a></li>
+				</ul>
+			</li>
+			<li id="phtml_5"><a href="#"><ins>&nbsp;</ins>Root node 2</a></li>
+		</ul>
+	</div>
+[%- PROCESS footer.html -%]
