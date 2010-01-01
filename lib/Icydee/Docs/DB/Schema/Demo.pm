@@ -10,7 +10,7 @@ package Icydee::Docs::DB::Schema::Demo;
 use Moose;
 use namespace::autoclean;
 
-use Carp;
+with 'MooseTree';
 
 extends 'DBIx::Class';
 
@@ -27,22 +27,23 @@ __PACKAGE__->add_columns(
     left_extent => {
         data_type       => "INT",
         default_value   => undef,
-        is_nullable     => 0,
+        is_nullable     => 1,
         size            => 10,
     },
     right_extent => {
         data_type       => "INT",
         default_value   => undef,
-        is_nullable     => 0,
+        is_nullable     => 1,
         size            => 10,
     },
     title => {
         data_type       => "VARCHAR",
         default_value   => "",
-        is_nullable     => 0,
+        is_nullable     => 1,
         size            => 32,
     },
 );
 __PACKAGE__->set_primary_key("id");
+
 
 1;
