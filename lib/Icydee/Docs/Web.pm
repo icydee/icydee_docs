@@ -22,9 +22,9 @@ use Catalyst::Runtime 5.80;
 
 use parent qw/Catalyst/;
 use Catalyst qw/-Debug
-    ConfigLoader
     StackTrace
     Static::Simple
+    ConfigLoader
     Session
     Session::Store::FastMmap
     Session::State::Cookie
@@ -39,6 +39,10 @@ __PACKAGE__->config(
     name            => 'Icydee::Docs::Web',
     default_view    => 'TT',
 );
+
+__PACKAGE__->config->{static}{dirs} = [
+    'static','img'
+];
 
 __PACKAGE__->config->{'View::JSON'} = {
 	expose_stash    => 'json_data',

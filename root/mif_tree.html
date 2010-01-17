@@ -9,15 +9,15 @@
 
 window.addEvent('domready',function(){
 	tree = new Mif.Tree({
-		container: $('tree_container'),// tree container
-		types: {// node types
+		container: $('tree_container'),             // tree container
+		types: {                                    // node types
 			folder:{
-				openIcon: 'mif-tree-open-icon',//css class open icon
-				closeIcon: 'mif-tree-close-icon'// css class close icon
+				openIcon: 'mif-tree-open-icon',     // css class open icon
+				closeIcon: 'mif-tree-close-icon'    // css class close icon
 			}
 		},
-		dfltType:'folder',//default node type
-		height: 18//node height
+		dfltType:'folder',                          // default node type
+		height: 18                                  // node height
 	});
 
 	var json=[
@@ -70,21 +70,52 @@ window.addEvent('domready',function(){
 		json: json
 	});
 
+    var tree2 = new Mif.Tree({
+	    container:      $('tree_container2'),
+	    initialize:     function(){
+    		// this.initSortable();
+//		    new Mif.Tree.KeyNav(this);
+	    },
+	    types: {
+    		folder:     {
+			    openIcon:       'mif-tree-open-icon',
+			    closeIcon:      'mif-tree-close-icon',
+			    loadable:       true
+		    },
+		    file:{
+    			openIcon:       'mif-tree-file-open-icon',
+			    closeIcon:      'mif-tree-file-close-icon'
+		    },
+		    loader:{
+    			openIcon:       'mif-tree-loader-open-icon',
+			    closeIcon:      'mif-tree-loader-close-icon',
+			    DDnotAllowed:   ['inside','after']
+		    }
+	    },
+	    dfltType:       'folder'
+    });
+
+    tree2.load({
+    	url:    '/ajax/tree_root'
+    });
+
+    tree2.loadOptions=function(node){
+    	return {
+		    url:    '/ajax/tree_children',
+		    data:   {'node_id':     node.data.node_id}
+	    };
+    };
+
 });
 
 [%- END %]
 
 [%- PROCESS header.html -%]
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
 
 	<h1>Simple Tree example</h1>
 	<div id="tree_container"></div>
+
+	<h1>Simple Tree lazy</h1>
+	<div id="tree_container2"></div>
 
 [%- PROCESS footer.html -%]
