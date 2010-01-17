@@ -1,26 +1,13 @@
-[%- use_jquery      =1 -%]
+[%- use_jquery      =0 -%]
 [%- use_mootools    =1 -%]
-[%- use_jdmenu      =1 -%]
+[%- use_jdmenu      =0 -%]
 [%- use_grid        =0 -%]
-[%- use_tree        =1 -%]
+[%- use_tree        =0 -%]
 [%- use_mif_tree    =1 -%]
 
 [%- javascript_block = BLOCK %]
 
-jQuery(document).ready(function() {
-  jQuery("#jq_tree").tree({
-    data: {
-        type:   "json",
-        async:  true,
-        opts:   {
-            method: "POST",
-            url:    "/ajax/test_tree"
-        }
-    },
-    ui: {
-      theme_name: 'apple'
-    }
-  });
+window.addEvent('domready',function(){
 	tree = new Mif.Tree({
 		container: $('tree_container'),// tree container
 		types: {// node types
@@ -85,31 +72,17 @@ jQuery(document).ready(function() {
 
 });
 
-
-
-
-
-
-
-
-
-
 [%- END %]
 
 [%- PROCESS header.html -%]
-	<div class="demo source" id="jq_tree">
-		<ul>
-			<li id="phtml_1" class="open"><a href="#"><ins>&nbsp;</ins>Root node 1</a>
-				<ul>
-					<li id="phtml_2"><a href="#"><ins>&nbsp;</ins>Child node 1</a></li>
-					<li id="phtml_3"><a href="#"><ins>&nbsp;</ins>Child node 2</a></li>
-
-					<li id="phtml_4"><a href="#"><ins>&nbsp;</ins>Some other child node with longer text</a></li>
-				</ul>
-			</li>
-			<li id="phtml_5"><a href="#"><ins>&nbsp;</ins>Root node 2</a></li>
-		</ul>
-	</div>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 
 	<h1>Simple Tree example</h1>
 	<div id="tree_container"></div>

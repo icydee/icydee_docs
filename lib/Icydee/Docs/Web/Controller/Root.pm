@@ -46,6 +46,13 @@ sub tree: Local: {
     $c->stash->{template} = 'tree.html';
 }
 
+sub mif_tree: Local: {
+    my ($self, $c) = @_;
+
+    # Test Tree
+    $c->stash->{template} = 'mif_tree.html';
+}
+
 sub default :Path {
     my ( $self, $c ) = @_;
     $c->response->body( 'Page not found' );
