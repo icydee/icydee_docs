@@ -35,7 +35,14 @@ use Catalyst qw/-Debug
 
 our $VERSION = '0.01';
 
-__PACKAGE__->config( name => 'Icydee::Docs::Web' );
+__PACKAGE__->config(
+    name            => 'Icydee::Docs::Web',
+    default_view    => 'TT',
+);
+
+__PACKAGE__->config->{'View::JSON'} = {
+	expose_stash    => 'json_data',
+};
 
 # Start the application
 __PACKAGE__->setup();
