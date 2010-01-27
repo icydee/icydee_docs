@@ -19,20 +19,6 @@ BEGIN {extends 'Catalyst::Controller'};
 __PACKAGE__->config->{namespace} = '';
 
 sub index :Path :Args(0) {
-    my ( $self, $c ) = @_;
-
-    my $demo = $c->model('DB::Demo')->create({
-        left_extent     => 1,
-        right_extent    => 2,
-        title           => 'root',
-    });
-    $c->log->debug("demo = $demo");
-
-    # Hello World
-    $c->response->body( $c->welcome_message );
-}
-
-sub test: Local: {
     my ($self, $c) = @_;
 
     # Test Grid
