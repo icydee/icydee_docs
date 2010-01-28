@@ -1,4 +1,4 @@
-package Icydee::Docs::DB::Schema::Folders;
+package Icydee::Docs::DB::Schema::Folder;
 
 use strict;
 use warnings;
@@ -32,5 +32,12 @@ __PACKAGE__->tree_columns({
     right_column    => 'rgt',
     level_column    => 'level',
 });
+
+# A Folder can have many Files
+__PACKAGE__->has_many(
+  "files",
+  "Icydee::Docs::DB::Schema::File",
+  { "foreign.folder_id" => "self.id" },
+);
 
 1;

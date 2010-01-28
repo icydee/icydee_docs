@@ -51,14 +51,13 @@ jQuery.noConflict;
 [% IF use_tree -%]
     <script src="/static/js/jquery.tree.min.js" type="text/javascript"></script>
 [%- END %]
+[% IF use_popup -%]
+    <script src="/static/js/jquery.popupWindow.js" type="text/javascript"></script>
+[%- END %]
 [% IF use_mif_tree -%]
     <link rel="stylesheet" type="text/css" media="screen" href="/static/css/Mif.Tree.css" />
-    <script src="/static/js/Mif.Tree.js" type="text/javascript"></script>
-    <script src="/static/js/Mif.Tree.Node.js" type="text/javascript"></script>
-    <script src="/static/js/Mif.Tree.Draw.js" type="text/javascript"></script>
-    <script src="/static/js/Mif.Tree.Hover.js" type="text/javascript"></script>
-    <script src="/static/js/Mif.Tree.Selection.js" type="text/javascript"></script>
-    <script src="/static/js/Mif.Tree.Load.js" type="text/javascript"></script>
+
+    <script src="/static/js/mif.tree-v1.2.3.js" type="text/javascript"></script>
 [%- END %]
 
     <script type="text/javascript">
@@ -109,9 +108,9 @@ jQuery(document).ready(function() {
             <a class="accessible">Home</a>
             <ul>
               <li><a href="[% c.uri_for('/') %]">Home</a></li>
-              <li><a href="[% c.uri_for('/test') %]">Test Grid</a></li>
               <li><a href="[% c.uri_for('/tree') %]">Test JQuery tree</a></li>
               <li><a href="[% c.uri_for('/mif_tree') %]">Test MIF tree</a></li>
+              <li><a href="[% c.uri_for('/pdfs') %]">Import PDFs</a></li>
             </ul>
           </li>
         </ul>

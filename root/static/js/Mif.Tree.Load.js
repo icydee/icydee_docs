@@ -78,14 +78,13 @@ Mif.Tree.Node.implement({
 			return self;
 		}
 		options=$extend($extend($extend({
-			isSuccess: $lambda(true),
-			secure: true,
-			onSuccess: success,
-			method: 'get'
+			isSuccess:  $lambda(true),
+			secure:     true,
+			onSuccess:  success,
+			method:     'get'
 		}, this.tree.loadOptions(this)), this.loadOptions), options);
 		if(options.json) return success(options.json);
 		new Request.JSON(options).send();
 		return this;
 	}
-
 });

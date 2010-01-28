@@ -40,9 +40,10 @@ __PACKAGE__->config(
     default_view    => 'TT',
 );
 
-__PACKAGE__->config->{static}{dirs} = [
-    'static','img'
-];
+__PACKAGE__->config->{static} = {
+    dirs    => ['static','img'],
+    logging => 0,
+};
 
 __PACKAGE__->config->{'View::JSON'} = {
 	expose_stash    => 'json_data',
