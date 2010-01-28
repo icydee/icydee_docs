@@ -34,7 +34,7 @@ sub tree_root: Local: {
         {
             property    => { name   => $root->title},
             type        => 'folder',
-            data        => { node_id    => 1 },
+            data        => { node_id    => 1, expand_me => 1 },
         }
     ];
     $c->stash->{current_view} = 'JSON';
@@ -51,6 +51,15 @@ sub input_file: Local: {
     my $description = $c->req->param('s_file_description');
     my $node_id     = $c->req->param('s_node_id');
     my $file_id     = $c->req->param('s_file_id');
+
+    if ($node_id) {
+        # Save it in session data
+        $c->session->{node_id} = $node_id;
+    }
+    if ($file_id) {
+        # Save it in session data
+        $c->session->{file_id} = $file_id;
+    }
 
     if (-e "$dir$filename") {
         # Process file and put it in the database
@@ -74,6 +83,7 @@ sub input_file: Local: {
             title       => $title,
             description => $description,
         });
+        $c->session->{file_id} = $file->id;
 
         # Create directory structure
         my $id      = sprintf("%08s", $file->id);
@@ -163,31 +173,58 @@ sub stored_filename : Local : {
 sub tree_children: Local: {
     my ($self, $c) = @_;
 
-    my $node_id = $c->request->param('node_id');
-    my $node = $c->model('DB::Folder')->find($node_id) || die "Cannot get tree node $node_id";
+    my $node_id         = $c->request->param('node_id');
+    my $current_file_id = $c->session->{file_id};
+    my $current_node_id = $c->session->{node_id};
+
+    my ($node, $current_node);
+
+    if ($node_id) {
+        $node = $c->model('DB::Folder')->find($node_id) || die "Cannot get tree node $node_id";
+    }
+    if ($current_file_id) {
+        my $file = $c->model('DB::File')->find($current_file_id) || die "Cannot get file $current_file_id";
+        $current_node_id = $file->folder_id;
+    }
 
     my @json_data;
     my $child_rs = $node->children;
+    $c->log->debug("TREE_CHILDREN session node_id=[$current_node_id]");
+    $c->log->debug("TREE_CHILDREN session file_id=[$current_file_id]");
     while (my $child = $child_rs->next) {
-        # Check if the child has any files or is a branch
-        my $is_folder = $child->is_branch ? 1 : 0;
-        if ($child->files->count) {
-            $is_folder = 1;
+        my $expand_me = 0;
+        if ($current_node_id == $child->id) {
+            $expand_me = 1;
+            $c->log->debug("TREE_CHILDREN: node [$current_node_id] is this node");
         }
-
+        if ($child->has_descendant($current_node_id)) {
+            $expand_me = 1;
+            $c->log->debug("TREE_CHILDREN: node [$current_node_id] has ancestor child ".$child->id." expand_me $expand_me");
+        }
+        my $currently_selected = $child->id == $current_node_id && ! $current_file_id ? 1 : 0;
         my $json_entry = {
-            property    => {name        => $child->title, },
-            type        => 'folder',
-            data        => {node_id     => $child->id, },
+            property    => {name        => $child->title},
+            type        => $currently_selected ? 'folder_current' : 'folder',
+            data        => {
+                node_id     => $child->id,
+                file_id     => 0,
+                expand_me   => $expand_me,
+                selected    => $currently_selected,
+            },
         };
         push @json_data, $json_entry;
     }
     my $files_rs = $node->files;
     while (my $file = $files_rs->next) {
+        my $currently_selected = $file->id == $current_file_id ? 1 : 0;
         my $json_entry = {
-            property    => {name        => $file->title, },
-            type        => 'file',
-            data        => {file_id     => $file->id, },
+            property    => {name        => $file->title},
+            type        => $currently_selected ? 'file_current' : 'file',
+            data        => {
+                file_id     => $file->id,
+                node_id     => 0,
+                selected    => $currently_selected,
+            },
         };
         push @json_data, $json_entry;
     }

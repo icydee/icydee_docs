@@ -24,7 +24,7 @@ __PACKAGE__->set_primary_key(qw/id/);
 __PACKAGE__->belongs_to(
   "folder",
   "Icydee::Docs::DB::Schema::Folder",
-  { folder_id => "id" },
+  { id => "folder_id" },
 );
 
 1;

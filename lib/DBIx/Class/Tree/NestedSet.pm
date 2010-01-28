@@ -834,8 +834,6 @@ sub create_leftmost_child {
 
 # Given a primary key, determine if it is a descendant of
 # this object
-# NOTE: Is this really necessary? We can do the same with the descendants
-# relationship
 #
 sub has_descendant {
     my ($self) = shift;
@@ -847,7 +845,26 @@ sub has_descendant {
 
     my ($root, $left, $right, $level) = $self->_get_columns;
 
-    if ($descendant->$left > $self->$left && $descendant->$left < $self->$right) {
+    if ($descendant->$left > $self->$left && $descendant->$right < $self->$right) {
+        return 1;
+    }
+    return;
+}
+
+# Given a primary key, determine if it is an ancestor of
+# this object
+#
+sub has_ancestor {
+    my ($self) = shift;
+
+    my $ancestor = $self->result_source->resultset->find(@_);
+    if (! $ancestor) {
+        return;
+    }
+
+    my ($root, $left, $right, $level) = $self->_get_columns;
+
+    if ($self->$left > $ancestor->$left && $self->$right < $ancestor->$right) {
         return 1;
     }
     return;
