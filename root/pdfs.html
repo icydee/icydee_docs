@@ -42,7 +42,7 @@ jQuery(document).ready(function() {
                 jQuery('#adminform_submit').addClass('hidden');
                 jQuery('#file_title').val('');
                 jQuery('#file_description').val('');
-                get_first_filename();
+                location.reload(true);
             }
         });
         return false;
@@ -102,9 +102,13 @@ window.addEvent('domready',function(){
                 if (child.data.expand_me==1) {
                     child.toggle(true);
                 }
+                if (child.data.selected) {
+                    node_id = node.data.node_id;
+                    file_id = node.data.file_id;
+                }
             }
         }
-        if (node.data.selected==1) {
+        if (node.data.selected) {
             node_id = node.data.node_id;
             file_id = node.data.file_id;
         }
@@ -115,7 +119,7 @@ window.addEvent('domready',function(){
             node_id = 0;
             file_id = node.data.file_id;
         }
-        if (node.data.node_id==1) {
+        if (node.data.node_id) {
             file_id = 0;
             node_id = node.data.node_id;
         }
@@ -153,15 +157,15 @@ function get_first_filename() {
 var pswin;
 
 function pop_up_window(url) {
-//    pswin = window.open('', 'fred', 'height=500,width=800');
-//    if (!pswin || pswin.closed) {
-//        pswin = window.open(url, 'fred', 'height=500,width=800');
-//    }
-//    else {
-//        pswin.location.href = url;
-//        pswin.focus();
-//    }
-//    jQuery('#first_file_href').click();
+    pswin = window.open('', 'fred', 'height=500,width=800');
+    if (!pswin || pswin.closed) {
+        pswin = window.open(url, 'fred', 'height=500,width=800');
+    }
+    else {
+        pswin.location.href = url;
+        pswin.focus();
+    }
+    jQuery('#first_file_href').click();
 }
 
 function form_change() {
