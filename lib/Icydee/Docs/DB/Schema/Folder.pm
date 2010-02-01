@@ -17,12 +17,11 @@ __PACKAGE__->add_columns(
         data_type   => 'integer',
         is_nullable => 1,
     },
-    lft     => { data_type => 'integer' },
-    rgt     => { data_type => 'integer' },
-    level   => { data_type => 'integer' },
-
-    title   => { data_type => 'text' },
-    file_id => { data_type => 'integer' },
+    lft         => { data_type => 'integer' },
+    rgt         => { data_type => 'integer' },
+    level       => { data_type => 'integer' },
+    title       => { data_type => 'text' },
+    description => { data_type => 'text' },
 );
 
 __PACKAGE__->set_primary_key(qw/id/);
@@ -39,13 +38,6 @@ __PACKAGE__->has_many(
   "files",
   "Icydee::Docs::DB::Schema::File",
   { "foreign.folder_id" => "self.id" },
-);
-
-# A folder may have a file
-__PACKAGE__->belongs_to(
-  "file",
-  "Icydee::Docs::DB::Schema::File",
-  { id => "file_id" },
 );
 
 1;

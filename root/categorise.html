@@ -11,6 +11,7 @@
 var filename;
 var node_id = 0;
 var cur_node;
+var tree;
 
 jQuery(document).ready(function() {
     get_first_filename();
@@ -21,10 +22,7 @@ jQuery(document).ready(function() {
 
     // Reset the  form
     jQuery('#file_reset').click(function() {
-        jQuery('#file_title').val('');
-        jQuery('#file_description').val('');
-        jQuery('#file_just_folder:checked').click();
-        jQuery('#file_submit').addClass('hidden');
+        reset_form();
         jQuery('#file_error_code').html('<em>Please supply all required fields *</em>');
     });
 
@@ -36,14 +34,24 @@ jQuery(document).ready(function() {
             s_file_title:       jQuery('#file_title').val(),
             s_file_just_folder: jQuery('#file_just_folder:checked').val()==1?1:0,
             s_file_description: jQuery('#file_description').val(),
-            s_file_insert:      jQuery('#file_insert:option:selected').val(),
+            s_where:            jQuery('#where:option:selected').val(),
             s_node_id:          node_id
         }, function(json) {
             jQuery('#file_error_code').html('<em>'+json.message+'</em>');
             if (json.error==0) {
-                jQuery('#file_submit').addClass('hidden');
-                jQuery('#file_title').val('');
-                jQuery('#file_description').val('');
+                var title = jQuery('#file_title').val();
+                var where = jQuery('#where:option:selected').val();
+                tree.add({
+                    property:   {
+                        name:   title
+                    },
+                    data:       {
+                        node_id:    json.data.node_id
+                    }
+                }, cur_node, where);
+
+                reset_form();
+                get_first_filename();
             }
         });
         return false;
@@ -67,8 +75,8 @@ window.addEvent('domready',function(){
         }
     });
 
-    var tree2 = new Mif.Tree({
-	    container:      $('tree_container2'),
+    tree = new Mif.Tree({
+	    container:      $('tree_container'),
         initialize: function(){
 			new Mif.Tree.KeyNav(this);
 			new Mif.Tree.Drag(this, {
@@ -147,13 +155,13 @@ window.addEvent('domready',function(){
 	})
     ;
 
-    tree2.load({
+    tree.load({
     	url:    '/ajax/tree_root'
     });
 
-    tree2.loadOptions=function(node){
+    tree.loadOptions=function(node){
     	return {
-		    url:    '/ajax/tree_children',
+		    url:    '/ajax/node_children',
 		    data:   {'node_id':     node.data.node_id}
 	    };
     };
@@ -190,6 +198,14 @@ function pop_up_window(url) {
     jQuery('#first_file_href').click();
 }
 
+function reset_form() {
+    jQuery('#file_title').val('');
+    jQuery('#file_description').val('');
+    jQuery('#file_just_folder:checked').click();
+    jQuery('#file_submit').addClass('hidden');
+}
+
+
 function file_form_change() {
     var s_title     = jQuery('#file_title').val();
     if (s_title=="" || node_id==0) {
@@ -210,7 +226,7 @@ function file_form_change() {
       <tr>
         <td valign="top" width="400">
 	      <h1>Files</h1>
-	      <div id="tree_container2"></div>
+	      <div id="tree_container"></div>
         </td>
         <td>&nbsp;&nbsp;&nbsp;</td>
         <td valign="top">
@@ -244,7 +260,7 @@ function file_form_change() {
               <tr>
                 <td class="td_title">Insert in tree:</td>
                 <td>
-                  <select id="file_insert">
+                  <select id="where">
                     <option value="before">Before</option>
                     <option value="inside">Inside</option>
                     <option value="after" selected>After</option>

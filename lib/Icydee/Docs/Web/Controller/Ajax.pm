@@ -25,7 +25,7 @@ sub test_tree : Local {
 
 # Get the root node of the tree
 #
-sub tree_root: Local: {
+sub tree_root : Local: {
     my ($self, $c) = @_;
 
     my $root = $c->model('DB::Folder')->find(1);
@@ -42,7 +42,7 @@ sub tree_root: Local: {
 
 # Process the input file request
 #
-sub input_file: Local: {
+sub input_file : Local: {
     my ($self, $c) = @_;
 
     my $dir         = "/var/sandbox/icydee/root/static/import/";
@@ -110,9 +110,96 @@ sub input_file: Local: {
     $c->stash->{current_view} = 'JSON';
 }
 
+
+# Process the input file request
+#
+sub categorise_file : Local: {
+    my ($self, $c) = @_;
+
+    $c->stash->{current_view} = 'JSON';
+
+    my $dir         = "/var/sandbox/icydee/root/static/import/";
+    my $filename    = $c->req->param('s_filename');
+    my $title       = $c->req->param('s_file_title');
+    my $description = $c->req->param('s_file_description');
+    my $node_id     = $c->req->param('s_node_id');
+    my $where       = $c->req->param('s_where');
+    my $just_folder = $c->req->param('s_file_just_folder');
+
+    if (! $node_id) {
+        # No node has been specified
+        $c->stash->{json_data} = {
+            error       => 1,
+            message     => "ERROR: No node specified",
+        };
+        return;
+    }
+    $c->session->{node_id} = $node_id;
+
+    if (! -e "$dir$filename") {
+        # Filename does not exist
+        $c->stash->{json_data} = {
+            error       => 1,
+            message     => "ERROR: File [$dir$filename] does not exist",
+        };
+        return;
+    }
+
+    my $node = $c->model('DB::Folder')->find($node_id);
+    my $new_node;
+
+    if ($where eq 'before') {
+        $new_node = $node->create_left_sibling({
+            title       => $title,
+            description => $description,
+        });
+    }
+    elsif ($where eq 'after') {
+        $new_node = $node->create_right_sibling({
+            title       => $title,
+            description => $description,
+        });
+    }
+    else {
+        $new_node = $node->create_rightmost_child({
+            title       => $title,
+            description => $description,
+        });
+    }
+    if (! $new_node) {
+        $c->stash->{json_data} = {
+            error       => 1,
+            message     => "ERROR: Cannot create a new node.",
+        };
+        return;
+    }
+
+    if (! $just_folder) {
+        # Create directory structure
+        my $id      = sprintf("%08s", $new_node->id);
+        my $dir0    = substr($id, 0, 4);
+        my $dir1    = substr($id, 4, 2);
+        my $file_n  = substr($id, 6, 2);
+        mkdir("/var/sandbox/icydee/root/static/files/$dir0");
+        mkdir("/var/sandbox/icydee/root/static/files/$dir0/$dir1");
+        if (link("$dir$filename", "/var/sandbox/icydee/root/static/files/$dir0/$dir1/$file_n.pdf")) {
+            unlink("$dir$filename");
+        }
+    }
+
+    $c->stash->{json_data} = {
+        error       => 0,
+        message     => 'SUCCESS: File saved',
+        data        => {
+            node_id     => $new_node->id,
+        },
+    };
+    return;
+}
+
 # Get the first file from the input directory
 #
-sub first_input_file: Local: {
+sub first_input_file : Local: {
     my ($self, $c) = @_;
 
     my $dir = IO::Dir->new("/var/sandbox/icydee/root/static/import");
@@ -169,7 +256,7 @@ sub stored_filename : Local : {
 
 # Respond to a move node in the tree
 #
-sub move_file: Local: {
+sub move_file : Local: {
     my ($self, $c) = @_;
 
     my $from_node_id    = $c->request->param('s_from_node_id');
@@ -227,11 +314,44 @@ sub move_file: Local: {
     $c->stash->{current_view} = 'JSON';
 }
 
+# Respond to a move node in the tree
+#
+sub move_folder : Local: {
+    my ($self, $c) = @_;
+
+    my $from_node_id    = $c->request->param('s_from_node_id');
+    my $to_node_id      = $c->request->param('s_to_node_id');
+    my $where           = $c->request->param('s_where');
+
+    # Moving a node
+    my $to_node = $c->model('DB::Folder')->find($to_node_id) || die "Cannot get folder node $to_node_id";
+    my $from_node = $c->model('DB::Folder')->find($from_node_id) || die "Cannot get folder node $from_node_id";
+
+    if ($where eq 'inside') {
+        $to_node->attach_rightmost_child($from_node);
+    }
+    elsif ($where eq 'before') {
+        $to_node->attach_left_sibling($from_node);
+    }
+    elsif ($where eq 'after') {
+        $to_node->attach_right_sibling($from_node);
+    }
+    else {
+        die "Unknown 'where' = [$where]";
+    }
+
+    $c->stash->{json_data} = {
+        error       => 0,
+        message     => "Success: Moved correctly",
+    };
+    $c->stash->{current_view} = 'JSON';
+}
+
 
 
 # Get the children of a specified node
 #
-sub tree_children: Local: {
+sub tree_children : Local: {
     my ($self, $c) = @_;
 
     my $node_id         = $c->request->param('node_id');
@@ -284,6 +404,37 @@ sub tree_children: Local: {
             data        => {
                 file_id     => $file->id,
                 node_id     => 0,
+                selected    => $currently_selected,
+            },
+        };
+        push @json_data, $json_entry;
+    }
+
+    $c->stash->{json_data} = \@json_data;
+    $c->stash->{current_view} = 'JSON';
+}
+
+# Get the children of a specified node (not files)
+#
+sub node_children : Local: {
+    my ($self, $c) = @_;
+
+    my $node_id         = $c->request->param('node_id');
+    my $current_node_id = $c->session->{node_id};
+
+    my ($node, $current_node);
+
+    $node = $c->model('DB::Folder')->find($node_id) || die "Cannot get tree node $node_id";
+
+    my @json_data;
+    my $child_rs = $node->children;
+    while (my $child = $child_rs->next) {
+        my $currently_selected = $child->id == $current_node_id ? 1 : 0;
+        my $json_entry = {
+            property    => {name        => $child->title},
+            type        => $currently_selected ? 'folder_current' : 'folder',
+            data        => {
+                node_id     => $child->id,
                 selected    => $currently_selected,
             },
         };
