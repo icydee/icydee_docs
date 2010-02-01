@@ -34,7 +34,10 @@ sub tree_root : Local: {
         {
             property    => { name   => $root->title},
             type        => 'folder',
-            data        => { node_id    => 1, expand_me => 1 },
+            data        => {
+                node_id     => 1,
+                description => $root->description,
+            },
         }
     ];
     $c->stash->{current_view} = 'JSON';
@@ -45,7 +48,7 @@ sub tree_root : Local: {
 sub input_file : Local: {
     my ($self, $c) = @_;
 
-    my $dir         = "/var/sandbox/icydee/root/static/import/";
+    my $dir         = Icydee::Docs::Web->config->{files}{import};
     my $filename    = $c->req->param('s_filename');
     my $title       = $c->req->param('s_file_title');
     my $description = $c->req->param('s_file_description');
@@ -90,9 +93,10 @@ sub input_file : Local: {
         my $dir0    = substr($id, 0, 4);
         my $dir1    = substr($id, 4, 2);
         my $file_n  = substr($id, 6, 2);
-        mkdir("/var/sandbox/icydee/root/static/files/$dir0");
-        mkdir("/var/sandbox/icydee/root/static/files/$dir0/$dir1");
-        if (link("$dir$filename", "/var/sandbox/icydee/root/static/files/$dir0/$dir1/$file_n.pdf")) {
+        my $storage = Icydee::Docs::Web->config->{files}{storage};
+        mkdir("$storage$dir0");
+        mkdir("$storage$dir0/$dir1");
+        if (link("$dir$filename", "$storage$dir0/$dir1/$file_n.pdf")) {
             unlink("$dir$filename");
         }
 
@@ -118,7 +122,7 @@ sub categorise_file : Local: {
 
     $c->stash->{current_view} = 'JSON';
 
-    my $dir         = "/var/sandbox/icydee/root/static/import/";
+    my $dir         = Icydee::Docs::Web->config->{files}{import};
     my $filename    = $c->req->param('s_filename');
     my $title       = $c->req->param('s_file_title');
     my $description = $c->req->param('s_file_description');
@@ -136,7 +140,7 @@ sub categorise_file : Local: {
     }
     $c->session->{node_id} = $node_id;
 
-    if (! -e "$dir$filename") {
+    if (! $just_folder && ! -e "$dir$filename") {
         # Filename does not exist
         $c->stash->{json_data} = {
             error       => 1,
@@ -180,9 +184,10 @@ sub categorise_file : Local: {
         my $dir0    = substr($id, 0, 4);
         my $dir1    = substr($id, 4, 2);
         my $file_n  = substr($id, 6, 2);
-        mkdir("/var/sandbox/icydee/root/static/files/$dir0");
-        mkdir("/var/sandbox/icydee/root/static/files/$dir0/$dir1");
-        if (link("$dir$filename", "/var/sandbox/icydee/root/static/files/$dir0/$dir1/$file_n.pdf")) {
+        my $storage = Icydee::Docs::Web->config->{files}{storage};
+        mkdir("$storage$dir0");
+        mkdir("$storage$dir0/$dir1");
+        if (link("$dir$filename", "$storage$dir0/$dir1/$file_n.pdf")) {
             unlink("$dir$filename");
         }
     }
@@ -202,7 +207,7 @@ sub categorise_file : Local: {
 sub first_input_file : Local: {
     my ($self, $c) = @_;
 
-    my $dir = IO::Dir->new("/var/sandbox/icydee/root/static/import");
+    my $dir = IO::Dir->new(Icydee::Docs::Web->config->{files}{import});
     my ($filename, @files);
 
     if (defined $dir) {
@@ -233,16 +238,16 @@ FILE:
 sub stored_filename : Local : {
     my ($self, $c) = @_;
 
-    my $file_id = $c->request->param('s_file_id');
-    my $file = $c->model('DB::File')->find($file_id);
-    if ($file) {
-        my $id      = sprintf("%08s", $file->id);
+    my $node_id = $c->request->param('s_node_id');
+    my $node = $c->model('DB::Folder')->find($node_id);
+    if ($node) {
+        my $id      = sprintf("%08s", $node->id);
         my $dir0    = substr($id, 0, 4);
         my $dir1    = substr($id, 4, 2);
-        my $file_n  = substr($id, 6, 2);
+        my $node_n  = substr($id, 6, 2);
         $c->stash->{json_data} = {
             error       => 0,
-            filename    => "/static/files/$dir0/$dir1/$file_n.pdf",
+            filename    => Icydee::Docs::Web->config->{files}{url}."$dir0/$dir1/$node_n.pdf",
         };
     }
     else {

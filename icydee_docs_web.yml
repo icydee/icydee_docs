@@ -8,3 +8,8 @@ DB:
     password:       Amma56am
     dbi_attr:       {AutoCommit: 1}
     extra_attr:
+
+files:
+    import:         /var/sandbox/icydee/root/static/import/
+    storage:        /var/sandbox/icydee/root/static/files/
+    url:            /static/files/

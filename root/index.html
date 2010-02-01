@@ -1,0 +1,185 @@
+[%- use_jquery      =1 -%]
+[%- use_mootools    =1 -%]
+[%- use_jdmenu      =1 -%]
+[%- use_grid        =1 -%]
+[%- use_tree        =1 -%]
+[%- use_mif_tree    =1 -%]
+[%- use_popup       =1 -%]
+
+[%- javascript_block = BLOCK %]
+
+jQuery(document).ready(function() {
+
+    jQuery('#folder_title').keyup(function() {
+        folder_form_change();
+    });
+
+    // Submit the folder_form via AJAX
+    jQuery('#folder_submit').click(function() {
+        // Save changes via AJAX
+        jQuery.getJSON("[% c.uri_for('/ajax/folder_update') %]", {
+            s_folder_title:         jQuery('#folder_title').val(),
+            s_folder_description:   jQuery('#folder_description').val(),
+            s_node_id:              node_id
+        }, function(json) {
+            jQuery('#folder_error_code').html('<em>'+json.message+'</em>');
+            if (json.error==0) {
+                var title = jQuery('#folder_title').val();
+                var description = jQuery('#folder_description').val();
+                cur_node.data.description = description;
+                cur_node.set({
+                    property:   { name:         title },
+                    data:       { description:  description }
+                });
+            }
+        });
+        return false;
+    });
+
+});
+
+window.addEvent('domready',function(){
+
+    var tree = new Mif.Tree({
+	    container:      $('tree_container'),
+	    initialize:     function(){
+		    new Mif.Tree.KeyNav(this);
+			new Mif.Tree.Drag(this, {
+				onDrop: function(from, to, where){
+				    jQuery.getJSON("[% c.uri_for('/ajax/move_folder') %]", {
+				        s_from_node_id: from.data.node_id,
+				        s_to_node_id:   to.data.node_id,
+				        s_where:        where
+				    }, function(json) {
+				        jQuery('#folder_error_code').html('<em>'+json.message+'</em>');
+				    });
+				}
+			});
+	    },
+	    types: {
+    		folder:     {
+			    openIcon:       'mif-tree-open-icon',
+			    closeIcon:      'mif-tree-close-icon',
+			    loadable:       true
+		    },
+		    file:{
+    			openIcon:       'mif-tree-file-open-icon',
+			    closeIcon:      'mif-tree-file-close-icon'
+		    },
+		    loader:{
+    			openIcon:       'mif-tree-loader-open-icon',
+			    closeIcon:      'mif-tree-loader-close-icon',
+			    DDnotAllowed:   ['inside','after']
+		    }
+	    },
+	    dfltType:       'folder'
+    })
+	.addEvent('select',function(node){
+	    cur_node = node;
+        node_id = node.data.node_id;
+        jQuery('#folder_title').val(cur_node.property.name);
+        jQuery('#folder_description').val(cur_node.data.description);
+        folder_form_change();
+        get_stored_filename(node.data.node_id);
+	})
+    ;
+
+    tree.load({
+    	url:    '/ajax/tree_root'
+    });
+
+    tree.loadOptions=function(node){
+    	return {
+		    url:    '/ajax/node_children',
+		    data:   {'node_id':     node.data.node_id}
+	    };
+    };
+
+    folder_form_change();
+});
+
+function get_stored_filename(node_id) {
+    jQuery.getJSON("[% c.uri_for('/ajax/stored_filename') %]", {
+        s_node_id:      node_id
+    }, function(json) {
+        if (json.error) {
+            jQuery('#error').html('<em>'+json.message+'</em>');
+        }
+        else {
+            pop_up_window(json.filename);
+        }
+    });
+    return false;
+}
+
+function pop_up_window(url) {
+    jQuery('#first_file_href').popupWindow({
+        windowName: 'fred',
+        windowURL:  url,
+        height:     500,
+        width:      800,
+        top:        50,
+        left:       50
+    });
+    jQuery('#first_file_href').click();
+}
+
+function folder_form_change() {
+    var s_title     = jQuery('#folder_title').val();
+    if (s_title=="" || node_id==0) {
+        jQuery('#folder_submit').addClass('hidden');
+        jQuery('#folder_error_code').html('<em>Please supply all required fields</em>');
+    }
+    else {
+        jQuery('#folder_submit').removeClass('hidden');
+        jQuery('#folder_error_code').html('');
+    }
+}
+
+[%- END %]
+
+[%- PROCESS header.html -%]
+
+    <table>
+      <tr>
+        <td valign="top" width="400">
+	      <h1>Documents</h1>
+	      <div id="tree_container"></div>
+	      <a id="first_file_href"></a>
+        </td>
+        <td>&nbsp;&nbsp;&nbsp;</td>
+        <td valign="top">
+
+          <h1>Rename Folder</h1>
+          <div id="folder_details">
+            <table>
+              <tr>
+                <td class="td_title">Title:</td>
+                <td>
+                  <input class="input_text" type="text" id="folder_title" value=""/>
+                </td>
+              </tr>
+              <tr>
+                <td class="td_title">Description:</td>
+                <td>
+                  <input class="input_text" type="text" id="folder_description" value=""/>
+                </td>
+              </tr>
+              <tr><td>&nbsp;</td></tr>
+              <tr>
+                <td colspan='2'>
+                  <input type="button" id="folder_reset" value="Reset Form">
+                  <input type="submit" id="folder_submit" value="Save Changes" class="hidden">
+                  <div id="folder_error_code"><em>Please supply all required fields *</em></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+        </td>
+      </tr>
+    </table>
+
+
+
+[%- PROCESS footer.html -%]

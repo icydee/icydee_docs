@@ -24,6 +24,12 @@ jQuery(document).ready(function() {
         folder_form_change();
     });
 
+    jQuery('#first_file_href').click(function() {
+        filename = jQuery('#first_file_href').html();
+        pop_up_window("[% c.uri_for('/static/import/') %]"+filename);
+//        alert('pop up');
+    });
+
     // Reset the  form
     jQuery('#file_reset').click(function() {
         reset_form();
@@ -87,20 +93,6 @@ jQuery(document).ready(function() {
 
 window.addEvent('domready',function(){
 
-    Mif.Tree.Node.implement({
-        reloadChildren: function() {
-            this.state.loaded=false;
-            this.state.open=false;
-            this.state.loadable=true;
-            this.children=[];
-            this.$draw=false;
-            this.tree.$getIndex();
-            this.getDOM('children').innerHTML='';
-            Mif.Tree.Draw.update(this);
-            return this;
-        }
-    });
-
     tree = new Mif.Tree({
 	    container:      $('tree_container'),
         initialize: function(){
@@ -123,23 +115,6 @@ window.addEvent('domready',function(){
 			    closeIcon:      'mif-tree-close-icon',
 			    loadable:       true
 		    },
-    		folder_current:     {
-			    openIcon:       'mif-tree-open-icon',
-			    closeIcon:      'mif-tree-close-icon',
-			    loadable:       true,
-			    cls:            'em'
-		    },
-		    file:{
-    			openIcon:       'mif-tree-file-open-icon',
-			    closeIcon:      'mif-tree-file-close-icon',
-			    dropDenied:     ['inside']
-		    },
-		    file_current:{
-    			openIcon:       'mif-tree-file-open-icon',
-			    closeIcon:      'mif-tree-file-close-icon',
-			    cls:            'em',
-			    dropDenied:     ['inside']
-		    },
 		    loader:{
     			openIcon:       'mif-tree-loader-open-icon',
 			    closeIcon:      'mif-tree-loader-close-icon',
@@ -148,32 +123,6 @@ window.addEvent('domready',function(){
 	    },
 	    dfltType:       'folder'
     })
-    .addEvent('load', function(node){
-        if (this.root.data.expand_me==1) {
-            this.root.toggle(true);
-        }
-        if (this.root.data.selected) {
-            node_id = this.root.data.node_id;
-        }
-    })
-    .addEvent('loadNode', function(node){
-        if (node.data.expand_me==1) {
-            var children    = new Array();
-            children        = node.getChildren();
-            for (var i = 0; i < children.length; i++) {
-                var child = children[i];
-                if (child.data.expand_me==1) {
-                    child.toggle(true);
-                }
-                if (child.data.selected) {
-                    node_id = node.data.node_id;
-                }
-            }
-        }
-        if (node.data.selected) {
-            node_id = node.data.node_id;
-        }
-    })
 	.addEvent('select',function(node){
 	    cur_node = node;
         node_id = node.data.node_id;
@@ -181,6 +130,7 @@ window.addEvent('domready',function(){
         jQuery('#folder_description').val(cur_node.data.description);
         file_form_change();
         folder_form_change();
+        get_stored_filename(node.data.node_id);
 	})
     ;
 
@@ -199,6 +149,20 @@ window.addEvent('domready',function(){
     folder_form_change();
 });
 
+function get_stored_filename(node_id) {
+    jQuery.getJSON("[% c.uri_for('/ajax/stored_filename') %]", {
+        s_node_id:      node_id
+    }, function(json) {
+        if (json.error) {
+            jQuery('#file_error_code').html('<em>'+json.message+'</em>');
+        }
+        else {
+            pop_up_window(json.filename);
+        }
+    });
+    return false;
+}
+
 function get_first_filename() {
     jQuery.getJSON("[% c.uri_for('/ajax/first_input_file') %]", {
     }, function(json) {
@@ -209,6 +173,7 @@ function get_first_filename() {
             jQuery('#first_file_href').html(json.filename);
             filename = json.filename;
             pop_up_window("[% c.uri_for('/static/import/') %]"+json.filename);
+            jQuery('#first_file_href').click();
         }
     });
     return false;
@@ -225,7 +190,6 @@ function pop_up_window(url) {
         pswin.location.href = url;
         pswin.focus();
     }
-    jQuery('#first_file_href').click();
 }
 
 function reset_form() {

@@ -25,39 +25,7 @@ sub index :Path :Args(0) {
     my ($self, $c) = @_;
 
     # Test Grid
-    $c->stash->{template} = 'test.html';
-}
-
-sub tree: Local: {
-    my ($self, $c) = @_;
-
-    # Test Tree
-    $c->stash->{template} = 'tree.html';
-}
-
-sub mif_tree: Local: {
-    my ($self, $c) = @_;
-
-    # Test Tree
-    $c->stash->{template} = 'mif_tree.html';
-}
-
-sub pdfs: Local: {
-    my ($self, $c) = @_;
-
-    my $dir = IO::Dir->new("/var/sandbox/icydee/root/static/import");
-    my @files;
-    if (defined $dir) {
-FILE:
-        while (my $file = $dir->read) {
-            next FILE if $file =~ m/^\./;
-            push @files, $file;
-        }
-    }
-
-    $c->stash->{files} = \@files;
-    # Show pdfs
-    $c->stash->{template} = 'pdfs.html';
+    $c->stash->{template} = 'index.html';
 }
 
 sub categorise: Local: {

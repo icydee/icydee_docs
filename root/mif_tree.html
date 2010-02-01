@@ -10,7 +10,7 @@
 
 window.addEvent('domready',function(){
 
-    var tree2 = new Mif.Tree({
+    var tree = new Mif.Tree({
 	    container:      $('tree_container2'),
 	    initialize:     function(){
     		// this.initSortable();
@@ -35,17 +35,15 @@ window.addEvent('domready',function(){
 	    dfltType:       'folder'
     })
 	.addEvent('select',function(node){
-        if (node.data.file_id) {
-            get_stored_filename(node.data.file_id);
-        }
+        get_stored_filename(node.data.node_id);
 	})
     ;
 
-    tree2.load({
+    tree.load({
     	url:    '/ajax/tree_root'
     });
 
-    tree2.loadOptions=function(node){
+    tree.loadOptions=function(node){
     	return {
 		    url:    '/ajax/tree_children',
 		    data:   {'node_id':     node.data.node_id}
@@ -54,9 +52,9 @@ window.addEvent('domready',function(){
 
 });
 
-function get_stored_filename(file_id) {
+function get_stored_filename(node_id) {
     jQuery.getJSON("[% c.uri_for('/ajax/stored_filename') %]", {
-        s_file_id:      file_id
+        s_node_id:      node_id
     }, function(json) {
         if (json.error) {
             jQuery('#error').html('<em>'+json.message+'</em>');
