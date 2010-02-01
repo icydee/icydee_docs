@@ -347,6 +347,37 @@ sub move_folder : Local: {
     $c->stash->{current_view} = 'JSON';
 }
 
+# Update a folder information (title and description)
+#
+sub folder_update : Local {
+    my ($self, $c) = @_;
+
+    $c->stash->{current_view} = 'JSON';
+
+    my $node_id     = $c->request->param('s_node_id');
+    my $title       = $c->request->param('s_folder_title');
+    my $description = $c->request->param('s_folder_description');
+
+    my $node = $c->model('DB::Folder')->find($node_id);
+    if (! $node) {
+        $c->stash->{json_data} = {
+            error       => 1,
+            message     => "ERROR: Cannot find node $node_id",
+        };
+        return;
+    }
+
+    $node->title($title);
+    $node->description($description);
+    $node->update;
+
+    $c->stash->{json_data} = {
+        error       => 0,
+        message     => "Success: Renamed",
+    };
+
+    return;
+}
 
 
 # Get the children of a specified node
@@ -429,13 +460,12 @@ sub node_children : Local: {
     my @json_data;
     my $child_rs = $node->children;
     while (my $child = $child_rs->next) {
-        my $currently_selected = $child->id == $current_node_id ? 1 : 0;
         my $json_entry = {
-            property    => {name        => $child->title},
-            type        => $currently_selected ? 'folder_current' : 'folder',
+            property    => {name => $child->title},
+            type        => 'folder',
             data        => {
                 node_id     => $child->id,
-                selected    => $currently_selected,
+                description => $child->description,
             },
         };
         push @json_data, $json_entry;

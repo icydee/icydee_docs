@@ -20,6 +20,10 @@ jQuery(document).ready(function() {
         file_form_change();
     });
 
+    jQuery('#folder_title').keyup(function() {
+        folder_form_change();
+    });
+
     // Reset the  form
     jQuery('#file_reset').click(function() {
         reset_form();
@@ -52,6 +56,28 @@ jQuery(document).ready(function() {
 
                 reset_form();
                 get_first_filename();
+            }
+        });
+        return false;
+    });
+
+    // Submit the folder_form via AJAX
+    jQuery('#folder_submit').click(function() {
+        // Save changes via AJAX
+        jQuery.getJSON("[% c.uri_for('/ajax/folder_update') %]", {
+            s_folder_title:         jQuery('#folder_title').val(),
+            s_folder_description:   jQuery('#folder_description').val(),
+            s_node_id:              node_id
+        }, function(json) {
+            jQuery('#folder_error_code').html('<em>'+json.message+'</em>');
+            if (json.error==0) {
+                var title = jQuery('#folder_title').val();
+                var description = jQuery('#folder_description').val();
+                cur_node.data.description = description;
+                cur_node.set({
+                    property:   { name:         title },
+                    data:       { description:  description }
+                });
             }
         });
         return false;
@@ -151,7 +177,10 @@ window.addEvent('domready',function(){
 	.addEvent('select',function(node){
 	    cur_node = node;
         node_id = node.data.node_id;
+        jQuery('#folder_title').val(cur_node.property.name);
+        jQuery('#folder_description').val(cur_node.data.description);
         file_form_change();
+        folder_form_change();
 	})
     ;
 
@@ -167,6 +196,7 @@ window.addEvent('domready',function(){
     };
 
     file_form_change();
+    folder_form_change();
 });
 
 function get_first_filename() {
@@ -215,6 +245,18 @@ function file_form_change() {
     else {
         jQuery('#file_submit').removeClass('hidden');
         jQuery('#file_error_code').html('');
+    }
+}
+
+function folder_form_change() {
+    var s_title     = jQuery('#folder_title').val();
+    if (s_title=="" || node_id==0) {
+        jQuery('#folder_submit').addClass('hidden');
+        jQuery('#folder_error_code').html('<em>Please supply all required fields</em>');
+    }
+    else {
+        jQuery('#folder_submit').removeClass('hidden');
+        jQuery('#folder_error_code').html('');
     }
 }
 
@@ -273,6 +315,32 @@ function file_form_change() {
                   <input type="button" id="file_reset" value="Reset Form">
                   <input type="submit" id="file_submit" value="Save Changes" class="hidden">
                   <div id="file_error_code"><em>Please supply all required fields *</em></div>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <h1>Rename Folder</h1>
+          <div id="folder_details">
+            <table>
+              <tr>
+                <td class="td_title">Title:</td>
+                <td>
+                  <input class="input_text" type="text" id="folder_title" value=""/>
+                </td>
+              </tr>
+              <tr>
+                <td class="td_title">Description:</td>
+                <td>
+                  <input class="input_text" type="text" id="folder_description" value=""/>
+                </td>
+              </tr>
+              <tr><td>&nbsp;</td></tr>
+              <tr>
+                <td colspan='2'>
+                  <input type="button" id="folder_reset" value="Reset Form">
+                  <input type="submit" id="folder_submit" value="Save Changes" class="hidden">
+                  <div id="folder_error_code"><em>Please supply all required fields *</em></div>
                 </td>
               </tr>
             </table>
