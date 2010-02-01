@@ -60,6 +60,12 @@ FILE:
     $c->stash->{template} = 'pdfs.html';
 }
 
+sub categorise: Local: {
+    my ($self, $c) = @_;
+
+    $c->stash->{template} = 'categorise.html';
+}
+
 sub default :Path {
     my ( $self, $c ) = @_;
     $c->response->body( 'Page not found' );

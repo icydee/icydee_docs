@@ -167,6 +167,67 @@ sub stored_filename : Local : {
     $c->stash->{current_view} = 'JSON';
 }
 
+# Respond to a move node in the tree
+#
+sub move_file: Local: {
+    my ($self, $c) = @_;
+
+    my $from_node_id    = $c->request->param('s_from_node_id');
+    my $from_file_id    = $c->request->param('s_from_file_id');
+    my $to_node_id      = $c->request->param('s_to_node_id');
+    my $to_file_id      = $c->request->param('s_to_file_id');
+    my $where           = $c->request->param('s_where');
+
+    my $moving_file;            # If not moving file, we are moving a folder
+    my ($from_file, $to_file);
+
+    if ($from_file_id) {
+        $from_file = $c->model('DB::File')->find($from_file_id) || die "Cannot get file node $from_file_id";
+        $from_node_id = $from_file->folder_id;
+        $moving_file = 1;
+    }
+
+    if ($to_file_id) {
+        $to_file = $c->model('DB::File')->find($to_file_id) || die "Cannot get file node $to_file_id";
+        $to_node_id = $to_file->folder_id;
+        if (! $moving_file) {
+            $where = 'inside';
+        }
+    }
+
+    # At the moment we have no way of positioning files, only folders.
+    if ($moving_file) {
+        # just move the file into the appropriate folder
+        $from_file->folder_id($to_node_id);
+        $from_file->update();
+    }
+    else {
+        # Moving a node
+        my $to_node = $c->model('DB::Folder')->find($to_node_id) || die "Cannot get folder node $to_node_id";
+        my $from_node = $c->model('DB::Folder')->find($from_node_id) || die "Cannot get folder node $from_node_id";
+
+        if ($where eq 'inside') {
+            $to_node->attach_rightmost_child($from_node);
+        }
+        elsif ($where eq 'before') {
+            $to_node->attach_left_sibling($from_node);
+        }
+        elsif ($where eq 'after') {
+            $to_node->attach_right_sibling($from_node);
+        }
+        else {
+            die "Unknown 'where' = [$where]";
+        }
+    }
+
+    $c->stash->{json_data} = {
+        error       => 0,
+        message     => "Success: Moved correctly",
+    };
+    $c->stash->{current_view} = 'JSON';
+}
+
+
 
 # Get the children of a specified node
 #

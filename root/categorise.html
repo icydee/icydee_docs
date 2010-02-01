@@ -10,43 +10,45 @@
 
 var filename;
 var node_id = 0;
-var file_id = 0;
 var cur_node;
 
 jQuery(document).ready(function() {
     get_first_filename();
 
-    jQuery('.input_text').keyup(function() {
-        form_change();
+    jQuery('#file_title').keyup(function() {
+        file_form_change();
     });
 
     // Reset the  form
-    jQuery('#adminform_reset').click(function() {
+    jQuery('#file_reset').click(function() {
         jQuery('#file_title').val('');
-        jQuery('#adminform_submit').addClass('hidden');
-        jQuery('#error_code').html('<em>Please supply all required fields *</em>');
+        jQuery('#file_description').val('');
+        jQuery('#file_just_folder:checked').click();
+        jQuery('#file_submit').addClass('hidden');
+        jQuery('#file_error_code').html('<em>Please supply all required fields *</em>');
     });
 
-    // Submit the form via AJAX
-    jQuery('#adminform_submit').click(function() {
+    // Submit the file_form via AJAX
+    jQuery('#file_submit').click(function() {
         // Save changes via AJAX
-        jQuery.getJSON("[% c.uri_for('/ajax/input_file') %]", {
+        jQuery.getJSON("[% c.uri_for('/ajax/categorise_file') %]", {
             s_filename:         filename,
             s_file_title:       jQuery('#file_title').val(),
+            s_file_just_folder: jQuery('#file_just_folder:checked').val()==1?1:0,
             s_file_description: jQuery('#file_description').val(),
-            s_node_id:          node_id,
-            s_file_id:          file_id
+            s_file_insert:      jQuery('#file_insert:option:selected').val(),
+            s_node_id:          node_id
         }, function(json) {
-            jQuery('#error_code').html('<em>'+json.message+'</em>');
+            jQuery('#file_error_code').html('<em>'+json.message+'</em>');
             if (json.error==0) {
-                jQuery('#adminform_submit').addClass('hidden');
+                jQuery('#file_submit').addClass('hidden');
                 jQuery('#file_title').val('');
                 jQuery('#file_description').val('');
-//                location.reload(true);
             }
         });
         return false;
     });
+
 });
 
 window.addEvent('domready',function(){
@@ -65,33 +67,18 @@ window.addEvent('domready',function(){
         }
     });
 
-
     var tree2 = new Mif.Tree({
 	    container:      $('tree_container2'),
         initialize: function(){
 			new Mif.Tree.KeyNav(this);
 			new Mif.Tree.Drag(this, {
-				onDrag: function(){
-					$('destination').innerHTML=this.target ? this.target.name : '';
-					$('where').innerHTML=this.where;
-				},
-				onStart: function(){
-					$('source').innerHTML=this.current.name;
-				},
-				onComplete: function(){
-					$('destination').innerHTML='';
-					$('where').innerHTML='';
-					$('source').innerHTML='';
-				},
 				onDrop: function(from, to, where){
-				    jQuery.getJSON("[% c.uri_for('/ajax/move_file') %]", {
+				    jQuery.getJSON("[% c.uri_for('/ajax/move_folder') %]", {
 				        s_from_node_id: from.data.node_id,
-				        s_from_file_id: from.data.file_id,
 				        s_to_node_id:   to.data.node_id,
-				        s_to_file_id:   to.data.file_id,
 				        s_where:        where
 				    }, function(json) {
-				        jQuery('#error_code').html('<em>'+json.message+'</em>');
+				        jQuery('#file_error_code').html('<em>'+json.message+'</em>');
 				    });
 				}
 			});
@@ -125,16 +112,7 @@ window.addEvent('domready',function(){
 			    DDnotAllowed:   ['inside','after']
 		    }
 	    },
-	    dfltType:       'folder',
-		onCopy: function(from, to, where, copy){
-			if(from.getParent()==copy.getParent()){
-				copy.set({
-					property: {
-						name: 'copy '+from.name
-					}
-				});
-			}
-		}
+	    dfltType:       'folder'
     })
     .addEvent('load', function(node){
         if (this.root.data.expand_me==1) {
@@ -142,7 +120,6 @@ window.addEvent('domready',function(){
         }
         if (this.root.data.selected) {
             node_id = this.root.data.node_id;
-            file_id = this.root.data.file_id;
         }
     })
     .addEvent('loadNode', function(node){
@@ -156,40 +133,19 @@ window.addEvent('domready',function(){
                 }
                 if (child.data.selected) {
                     node_id = node.data.node_id;
-                    file_id = node.data.file_id;
                 }
             }
         }
         if (node.data.selected) {
             node_id = node.data.node_id;
-            file_id = node.data.file_id;
         }
     })
 	.addEvent('select',function(node){
 	    cur_node = node;
-        if (node.data.file_id) {
-            node_id = 0;
-            file_id = node.data.file_id;
-        }
-        if (node.data.node_id) {
-            file_id = 0;
-            node_id = node.data.node_id;
-        }
-        form_change();
+        node_id = node.data.node_id;
+        file_form_change();
 	})
     ;
-
-//    tree.addEvent('loadChildren', function(parent){
-//        if(!parent) return;
-//        if(!parent.$name){
-//            parent.$name=parent.name;
-//        }
-//        parent.set({
-//            property:{
-//                name: parent.$name+' ('+parent.children.length+')'
-//            }
-//        });
-//    });
 
     tree2.load({
     	url:    '/ajax/tree_root'
@@ -201,6 +157,8 @@ window.addEvent('domready',function(){
 		    data:   {'node_id':     node.data.node_id}
 	    };
     };
+
+    file_form_change();
 });
 
 function get_first_filename() {
@@ -232,15 +190,15 @@ function pop_up_window(url) {
     jQuery('#first_file_href').click();
 }
 
-function form_change() {
+function file_form_change() {
     var s_title     = jQuery('#file_title').val();
-    if (s_title=="" || (node_id==0 && file_id==0)) {
-        jQuery('#adminform_submit').addClass('hidden');
-        jQuery('#error_code').html('<em>Please supply all required fields ['+node_id+']['+file_id+']*</em>');
+    if (s_title=="" || node_id==0) {
+        jQuery('#file_submit').addClass('hidden');
+        jQuery('#file_error_code').html('<em>Please supply all required fields</em>');
     }
     else {
-        jQuery('#adminform_submit').removeClass('hidden');
-        jQuery('#error_code').html('');
+        jQuery('#file_submit').removeClass('hidden');
+        jQuery('#file_error_code').html('');
     }
 }
 
@@ -251,18 +209,24 @@ function form_change() {
     <table>
       <tr>
         <td valign="top" width="400">
-	      <h1>Folders and Files</h1>
+	      <h1>Files</h1>
 	      <div id="tree_container2"></div>
         </td>
         <td>&nbsp;&nbsp;&nbsp;</td>
         <td valign="top">
-          <h1>Process File</h1>
+          <h1>Categorise Input File</h1>
           <div id="file_details">
             <table>
               <tr>
                 <td class="td_title">Filename:</td>
                 <td id="first_file">
                   <a id="first_file_href"></a>
+                </td>
+              </tr>
+              <tr>
+                <td class="td_title">Just Create Folder:</td>
+                <td>
+                  <input class="input_text" type="checkbox" id="file_just_folder" value="1"/>
                 </td>
               </tr>
               <tr>
@@ -277,24 +241,29 @@ function form_change() {
                   <input class="input_text" type="text" id="file_description" value=""/>
                 </td>
               </tr>
+              <tr>
+                <td class="td_title">Insert in tree:</td>
+                <td>
+                  <select id="file_insert">
+                    <option value="before">Before</option>
+                    <option value="inside">Inside</option>
+                    <option value="after" selected>After</option>
+                  </select>
+                </td>
+              </tr>
               <tr><td>&nbsp;</td></tr>
               <tr>
                 <td colspan='2'>
-                  <input type="button" name="adminform_reset" id="adminform_reset" value="Reset Form">
-                  <input type="submit" name="adminform_submit" id="adminform_submit" value="Save Changes" class="hidden">
-                  <div id="error_code"><em>Please supply all required fields *</em></div>
+                  <input type="button" id="file_reset" value="Reset Form">
+                  <input type="submit" id="file_submit" value="Save Changes" class="hidden">
+                  <div id="file_error_code"><em>Please supply all required fields *</em></div>
                 </td>
               </tr>
             </table>
           </div>
+
         </td>
       </tr>
     </table>
-
-    <div id="informer">
-        <p>source: <span id="source"></span></p>
-        <p>destination: <span id="destination"></span></p>
-        <p>where: <span id="where"></span></p>
-    </div>
 
 [%- PROCESS footer.html -%]
